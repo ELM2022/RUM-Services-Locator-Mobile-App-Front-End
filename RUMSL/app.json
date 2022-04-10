@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "RUMSL",
+    "slug": "RUMSL",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
