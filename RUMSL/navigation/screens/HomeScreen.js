@@ -1,9 +1,12 @@
 import * as React from 'react';
-import{View,StyleSheet} from 'react-native';
+import{View,Text,ImageBackground,StyleSheet, } from 'react-native';
+import MyWeb from './WebVisualizer';
+
+
 
 export default function HomeScreen({navitagtion}){
     return(
-        <View></View>
+          <MyWeb/>
     );
 }
 
