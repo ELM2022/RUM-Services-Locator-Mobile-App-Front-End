@@ -18,7 +18,7 @@ export default function MyWeb() {
     return (
         <SafeAreaView style={styles.container}>
             <SafeAreaView style ={{width:'100%', height:'100%'}}>
-      <WebView 
+      {/* <WebView 
         renderLoading={ActivityIndicatorElement}
         startInLoadingState={true}
         javaScriptEnabled={true}
@@ -26,7 +26,7 @@ export default function MyWeb() {
         style={{ marginTop: 0 }}
         onShouldStartLoadWithRequest={event => {if(event.url!='https://azure-map-test.herokuapp.com/') return false; return true;}}
         setSupportMultipleWindows={false}
-      />
+      /> */}
       </SafeAreaView>
       </SafeAreaView>
     );
