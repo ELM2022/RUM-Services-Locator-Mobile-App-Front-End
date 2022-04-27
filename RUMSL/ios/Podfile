@@ -22,6 +22,8 @@ target 'RUMSL' do
   #   use_flipper!('Flipper' => '0.75.1', 'Flipper-Folly' => '2.5.3', 'Flipper-RSocket' => '1.3.1')
   # end
 
+  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
+
   post_install do |installer|
     react_native_post_install(installer)
 
@@ -45,5 +47,12 @@ target 'RUMSL' do
       Pod::UI.warn e
     end
   end
+
+  rn_maps_path = '../node_modules/react-native-maps'
+  pod 'react-native-google-maps', :path => rn_maps_path
+  pod 'GoogleMaps'
+  pod 'Google-Maps-iOS-Utils'
+
+  use_native_modules!
 
 end
