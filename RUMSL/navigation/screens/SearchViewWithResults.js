@@ -5,7 +5,7 @@ import { View ,Text,Button,Alert,Keyboard, StyleSheet,Pressable,TouchableOpacity
 import { getAutoComplete,getServices,getAllOffices} from '../../handler/directoryHandler';
 
 
-const MyComponent = () => {
+const MyComponent = ({navigation}) => {
       
     var autoCompleteArr = []
     const [servicesArr , setServicesArr] = React.useState([]);
@@ -57,7 +57,9 @@ function renderTableData(){
         <View key={office_id} >
         <TouchableOpacity
         style={styles.button2}
-        onPress={() => Alert.alert(office_name+" Button Clicked with id= "+office_id+" 🧚🏻 ")}
+        onPress={() => {
+          navigation.navigate('Inicio', office)
+        }}
         >
         <Text style={styles.text2}>{office_name}</Text>
       </TouchableOpacity>
