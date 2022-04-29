@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const getAllOffices = () => {
     return axios
-        .get(`https://rumsl-backend.herokuapp.com/offices`)
+        .get(`https://rumsl-backend.herokuapp.com/offices/active`)
         .then( response => {
             return response
         })

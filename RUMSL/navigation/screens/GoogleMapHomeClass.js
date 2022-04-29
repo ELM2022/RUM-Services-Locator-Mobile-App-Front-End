@@ -1,10 +1,11 @@
 import * as React from 'react';
-import{View,Text,StyleSheet} from 'react-native';
+import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable } from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker, Callout} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import {getAllOffices} from '../../handler/directoryHandler';
 import { Button } from 'react-native-elements';
+import Carousel from 'react-native-snap-carousel';
 
 
 const GOOGLE_MAPS_APIKEY = 'AIzaSyAQW5Yo0EM3l4Who0_9suk42tpMwbNSCG8';
@@ -26,6 +27,8 @@ class GoogleMapHomeClass extends React.Component {
         offices: [],
         officeMarker:[],
         routes : false,
+        previewBoolean : false,
+        previewOffice : {},
         destination : {latitude: 18.2095366, longitude: -67.1407473}
        };
     }
@@ -36,7 +39,6 @@ class GoogleMapHomeClass extends React.Component {
                 this.setState({...this.state,errorMsg:'Permission to access location was denied'})
                 return;
               }
-        
               let location = await Location.getCurrentPositionAsync({});
               this.setState({...this.state,location: location})
               //console.log("Updated 111 to: " + this.state.location.coords.latitude);
@@ -84,7 +86,7 @@ class GoogleMapHomeClass extends React.Component {
                 coordinate={{latitude: office_latitude, longitude: office_longitude}}
                 icon = {require('../map/pawPinSmall.png')} 
                 onPress = {() => {
-                    this.updateDestination(office_latitude,office_longitude)  
+                    this.updateDestination(office_latitude,office_longitude,index)  
                 }
             }
                 >
@@ -105,22 +107,29 @@ class GoogleMapHomeClass extends React.Component {
             )
         })
     }
-    updateDestination = (office_latitude , office_longitude) => {
+    updateDestination = (office_latitude , office_longitude,index) => {
+        this.state.previewOffice = this.state.offices[index];
         this.updateOrigin();
+        //this.state.carouselOffice = this.state.offices[index];
         //console.log("Updated 222 to: " + this.state.location.coords.latitude);
         this.state.destination.latitude=office_latitude;
         this.state.destination.longitude=office_longitude;
+        //this._carousel.snapToItem(index);
         
     }
     
 
     mountRoute(){
         this.setState({...this.state,routes:true})
+        console.log(this.state.routes)
+        // this.setState({...this.state,previewBoolean:true})
+        // console.log(this.state.previewBoolean)
+        //this.setState({...this.state,carouselBoolean:true})
         this._map.animateToRegion({
-            latitude: this.state.destination.latitude,
-            longitude: this.state.destination.longitude,
-            latitudeDelta: 0.017,
-            longitudeDelta: 0.01
+          latitude: this.state.destination.latitude + 0.0020132, //change in coords to fit preview properly under description
+          longitude: this.state.destination.longitude + 0.0000405, // ^same
+          latitudeDelta: 0.008,
+          longitudeDelta: 0.00755
           });
     }
     renderRoutes() {
@@ -134,6 +143,7 @@ class GoogleMapHomeClass extends React.Component {
             this.setState({...this.state,location: location})
             //this.state.location=location;
         }
+        
 
         return(
          <MapViewDirections
@@ -146,15 +156,83 @@ class GoogleMapHomeClass extends React.Component {
         /> 
         )
     }
+    renderPreviewDescription(){
+        let item = this.state.previewOffice
+        return(
+            
+            <View style={styles.carousel}>
+        <View style={styles.cardContainer}>
+            <ScrollView>
+                <Text style={styles.cardTitle}>{item.office_name}</Text>
+                <Text style={styles.cardHours}>{item.office_schedule}</Text>
+                <Text style={styles.cardHours}>{item.office_phone_number}</Text>
+                <Text style={styles.cardImage}>{item.office_description}</Text>
+            </ScrollView>
+        </View>
+        <Pressable
+        
+        style={styles.startButton}>
+        <Text style={styles.textButton} >Comenzar</Text>
+        </Pressable>
+        <Pressable
+        style={styles.cancelButton}
+        onPress={() => {
+            if(this.state.routes === true ){
+                this.setState({...this.state,routes:false})    
+            } 
+          }}
+        >
+       <Text style={styles.textButton} >Salir</Text>
+        </Pressable>
+        </View>
+        
+        
+        )
+    }
+
+    // onCarouselItemChange = (index) => {
+    //     let location = this.state.offices[index];
+    
+    //     this._map.animateToRegion({
+    //       latitude: location.office_latitude + 0.0020132, //change in coords to fit preview properly under description
+    //       longitude: location.office_longitude + 0.0000405, // ^same
+    //       latitudeDelta: 0.008,
+    //       longitudeDelta: 0.00755
+    //     })
+    
+    //     this.state.officeMarker[index].showCallout()
+    //   }
+
+    // renderCarouselItem = ({ item }) => 
+        
+    //     <View style={styles.cardContainer}>
+    //         <ScrollView>
+    //         <Text style={styles.cardTitle}>{item.office_name}</Text>
+    //         <Text style={styles.cardHours}>{item.office_schedule}</Text>
+    //         <Text style={styles.cardHours}>{item.office_phone_number}</Text>
+    //         <Text style={styles.cardImage}>{item.office_description}</Text>
+    //         </ScrollView>
+    //     </View>
+    
+    hideRoute(){
+        
+        if(this.state.routes === true ){
+            this.setState({...this.state,routes:false})    
+        }  
+            //console.log("Route= " + this.state.routes + "    previewBool= " + this.state.previewBoolean) 
+    }
 
     render(){
-        console.log("render");
+        //console.log("render");
+        console.log("WWWW==="+Dimensions.get('window').width)
+        console.log("HHHH=== "+Dimensions.get('window').height)
         return(
             
             <View style={styles.container}>
             {/*Render our MapView*/}
             
               <MapView
+              showsMyLocationButton = {true}
               ref={map => this._map = map}
               provider={PROVIDER_GOOGLE}
                 style={styles.map}
@@ -162,13 +240,15 @@ class GoogleMapHomeClass extends React.Component {
                 initialRegion={initialPosition}
                 showsUserLocation={true}
                 onPress={() => {
-                    if(this.state.routes === true)
-                        this.setState({...this.state,routes:false})
+                    if(this.state.routes === true ){
+                        this.setState({...this.state,routes:false})    
+                    } 
                   }}
               >
                   {this.renderMarkers()}
                   {this.state.routes && this.renderRoutes()}
             </MapView>
+                   {this.state.routes && this.renderPreviewDescription()} 
             </View>
            
             
@@ -196,5 +276,73 @@ const styles = StyleSheet.create({
         borderWidth:2,
         padding: 20,
       },
+      carousel: {
+        position: 'absolute',
+        top: 0,
+        marginTop: 48
+      },
+      cardContainer: {
+        backgroundColor: 'rgba(0,102, 0, 0.6)',
+        height: 275,
+        width: Dimensions.get('window').width - 5,
+        padding: 24,
+        borderRadius: 24
+      },
+      cardImage: {
+        color: 'white',
+        fontSize: 15,
+        alignSelf: 'center'
+      },
+      cardTitle: {
+        color: 'white',
+        fontSize: 25,
+        alignSelf: 'center',
+        fontWeight: "bold",
+        textAlign: 'center'
+      },
+      cardHours: {
+        color: 'white',
+        fontSize: 14,
+        alignSelf: 'center'
+      },
+      startButton: {
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 4,
+        elevation: 3,
+        backgroundColor: '#0080FF',
+        position: 'absolute',
+        bottom: (-0.568) * Dimensions.get('window').height,
+        marginBottom: 48,
+        left: 0,
+        width: (Dimensions.get('window').width / 2 ) - 50,
+        borderRadius: 24
+        
+        
+      },
+      cancelButton: {
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 4,
+        elevation: 3,
+        backgroundColor: 'red',
+        position: 'absolute',
+        bottom: (-0.568) * Dimensions.get('window').height,
+        marginBottom: 48,
+        right:0,
+        width: (Dimensions.get('window').width / 2 ) - 55,
+        borderRadius: 24
+        
+        
+        
+      },
+      textButton: {
+        color: 'white',
+       
+      }
       
   });
