@@ -80,40 +80,9 @@ class Table extends Component {
    constructor(props) {
       super(props) //override Component class constructor
       this.state = { //state is by default an object
-         Offices: [ //Offices object to be replaced from Database call with proper Active Offices.
-            // { id :'1', name: 'Cafetería ' },
-            // { id :'2', name: 'Oficina de ID '},
-            // { id :'3', name: 'Colocaciones '},
-            // { id :'4', name: 'Actividades Sociales y Culturales '},
-            // { id :'5', name: 'Consejería Profesional ' },
-            // { id :'6', name: 'Servicios Psicológicos '},
-            // { id :'7', name: 'Merendero '},
-            // { id :'8', name: 'Librería '},
-            // { id :'9', name: 'Oficina Intercambio ' },
-            // { id :'10', name: 'Registraduría '},
-            // { id :'11', name: 'Procuraduría '},
-            // { id :'12', name: 'Estudios Graduados '},
-            // { id :'13', name: 'Admisiones ' },
-            // { id :'14', name: 'CIVIS '},
-            // { id :'15', name: 'RUMbo Ex'},
-            // { id :'16', name: 'Asisencia Económica '},
-            // { id :'17', name: 'Servicios Médicos ' },
-            // { id :'18', name: 'Tránsito y Vigilancia '},
-            // { id :'19', name: 'Recaudaciones '},
-            // { id :'20', name: 'Seguridad '},
-         ],
+         Offices: [],
       }
    }
-
-    
-   // testHomeScreenCall (){
-   //    return (<Tab.Screen name={homeName} component={HomeScreen}
-   //    options = {{
-   //        tabBarButton: (props) => (<CustomTabBarButton {...props}/>),
-   //        headerShown: false
-   //    }}
-   //    />)
-   // }
 
    renderTableDropDownNuevoIngreso() {
     return serviceNuevoIngreso.map((service, index) => {
@@ -131,8 +100,7 @@ class Table extends Component {
           selectedTextStyle={styles.text}
           dropdownPosition = 'bottom'
           onChange={item => {
-            Alert.alert(item.label+" Button Clicked with id= "+value+" 🧚🏻 ")
-            console.log(item.label+" was clicked! ") //item.label contains clicke office
+            this.props.navigation.navigate('Inicio')
           }}
          >
           <Text style={styles.text}>{label}</Text>
@@ -157,8 +125,7 @@ class Table extends Component {
          placeholderStyle={styles.text}
          selectedTextStyle={styles.text}
          onChange={item => {
-           Alert.alert(item.label+" Button Clicked with id= "+value+" 🧚🏻 ")
-           console.log(item.label+" was clicked! ") //item.label contains clicke office
+          this.props.navigation.navigate('Inicio')
          }}
         >
          <Text style={styles.text}>{label}</Text>
@@ -183,8 +150,7 @@ class Table extends Component {
          placeholderStyle={styles.text}
          selectedTextStyle={styles.text}
          onChange={item => {
-           Alert.alert(item.label+" Button Clicked with id= "+value+" 🧚🏻 ")
-           console.log(item.label+" was clicked! ") //item.label contains clicke office
+          this.props.navigation.navigate('Inicio')
          }}
         >
          <Text style={styles.text}>{label}</Text>
@@ -209,8 +175,7 @@ class Table extends Component {
          placeholderStyle={styles.text}
          selectedTextStyle={styles.text}
          onChange={item => {
-           Alert.alert(item.label+" Button Clicked with id= "+value+" 🧚🏻 ")
-           console.log(item.label+" was clicked! ") //item.label contains clicke office
+          this.props.navigation.navigate('Inicio')
          }}
         >
          <Text style={styles.text}>{label}</Text>
@@ -235,8 +200,7 @@ renderTableDropDownAsistenciaAcademica() {
          placeholderStyle={styles.text}
          selectedTextStyle={styles.text}
          onChange={item => {
-           Alert.alert(item.label+" Button Clicked with id= "+value+" 🧚🏻 ")
-           console.log(item.label+" was clicked! ") //item.label contains clicke office
+          this.props.navigation.navigate('Inicio')
          }}
         >
          <Text style={styles.text}>{label}</Text>
@@ -261,8 +225,7 @@ renderTableDropDownAsistenciaProfesional() {
          placeholderStyle={styles.text}
          selectedTextStyle={styles.text}
          onChange={item => {
-           Alert.alert(item.label+" Button Clicked with id= "+value+" 🧚🏻 ")
-           console.log(item.label+" was clicked! ") //item.label contains clicke office
+          this.props.navigation.navigate('Inicio')
          }}
         >
          <Text style={styles.text}>{label}</Text>
@@ -287,8 +250,7 @@ renderTableDropDownMatricula() {
          placeholderStyle={styles.text}
          selectedTextStyle={styles.text}
          onChange={item => {
-           Alert.alert(item.label+" Button Clicked with id= "+value+" 🧚🏻 ")
-           console.log(item.label+" was clicked! ") //item.label contains clicke office
+           this.props.navigation.navigate('Inicio')
          }}
         >
          <Text style={styles.text}>{label}</Text>
@@ -300,15 +262,11 @@ renderTableDropDownMatricula() {
 
 componentDidMount(){
    getAllOffices().then(res => {
-      //console.log(res.data.data.offices) 
       this.setState({Offices:res.data.data.offices})
-      res.data.data.offices.map((res, index) => {
-         const { office_id, office_name } = res //destructuring
-         console.log(office_id +":"+office_name)
-   })
    })
   
 }
+
  renderTableData() {
    return this.state.Offices.map((office, index) => {
       const { office_id, office_name } = office //destructuring
@@ -317,8 +275,7 @@ componentDidMount(){
          <TouchableOpacity
          style={styles.button}
          onPress={() => {
-            Alert.alert(office_name+" Button Clicked with id= "+office_id+" 🧚🏻 ")
-           // this.props.navigation.navigate('./HomeScreen');
+            this.props.navigation.navigate('Inicio', office)
          }
       }
          >

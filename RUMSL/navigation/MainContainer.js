@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { StyleSheet,Dimensions,TouchableOpacity, View} from 'react-native';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, useNavigationContainerRef } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {getAllOffices} from '../handler/directoryHandler';
@@ -49,6 +49,8 @@ const CustomTabBarButton = ({children, onPress}) => (
 );
 
 export default function MainContainer(){
+
+    const navigationRef = useNavigationContainerRef();
     
   
 
@@ -58,7 +60,6 @@ export default function MainContainer(){
             <Tab.Navigator
             initialRouteName={homeName}
             screenOptions={
-                
                 ({route})=>({
                 tabBarIcon:({focused,color,size})=>{
                     let iconName;

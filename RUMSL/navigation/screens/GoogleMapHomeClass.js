@@ -48,7 +48,6 @@ class GoogleMapHomeClass extends React.Component {
         getAllOffices().then(res => {
             this.setState({...this.state,offices:res.data.data.offices})
             console.log("get All Offices");
-         
          })
             let { status } = await Location.requestForegroundPermissionsAsync();
             this.setState({...this.state,permissionStatus:status})
@@ -71,6 +70,20 @@ class GoogleMapHomeClass extends React.Component {
         //             this.setState({...this.state,location: location})
         //   }, 5000);
           
+    }
+
+    componentDidUpdate(prevProps) {
+        if(prevProps == this.props){
+            // console.log("No Change")
+        }
+        else{
+            const newLatitude = this.props.route.params.office_latitude
+            const newLongitude = this.props.route.params.office_longitude
+            if(newLatitude !== initialPosition.latitude && newLongitude !== initialPosition.longitude) {
+                this.updateDestination(newLatitude, newLongitude)
+                this.mountRoute()
+            }
+        }
     }
 
     renderMarkers() {
@@ -110,8 +123,6 @@ class GoogleMapHomeClass extends React.Component {
     updateDestination = (office_latitude , office_longitude,index) => {
         this.state.previewOffice = this.state.offices[index];
         this.updateOrigin();
-        //this.state.carouselOffice = this.state.offices[index];
-        //console.log("Updated 222 to: " + this.state.location.coords.latitude);
         this.state.destination.latitude=office_latitude;
         this.state.destination.longitude=office_longitude;
         //this._carousel.snapToItem(index);
@@ -223,11 +234,7 @@ class GoogleMapHomeClass extends React.Component {
     }
 
     render(){
-        //console.log("render");
-        console.log("WWWW==="+Dimensions.get('window').width)
-        console.log("HHHH=== "+Dimensions.get('window').height)
         return(
-            
             <View style={styles.container}>
             {/*Render our MapView*/}
             
