@@ -5,7 +5,6 @@ import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import {getAllOffices} from '../../handler/directoryHandler';
 import { Button } from 'react-native-elements';
-import Carousel from 'react-native-snap-carousel';
 
 
 const GOOGLE_MAPS_APIKEY = 'AIzaSyAQW5Yo0EM3l4Who0_9suk42tpMwbNSCG8';
@@ -61,14 +60,14 @@ class GoogleMapHomeClass extends React.Component {
             //console.log(this.state.location.coords.latitude)
           
 
-        //     setInterval(async() => {
-        //           if (this.state.permissionStatus !== 'granted') {
-        //               this.setState({...this.state,errorMsg:'Permission to access location was denied'})
-        //               return;
-        //             }
-        //             let location = await Location.getCurrentPositionAsync({});
-        //             this.setState({...this.state,location: location})
-        //   }, 5000);
+            setInterval(async() => {
+                  if (this.state.permissionStatus !== 'granted') {
+                      this.setState({...this.state,errorMsg:'Permission to access location was denied'})
+                      return;
+                    }
+                    let location = await Location.getCurrentPositionAsync({});
+                    this.setState({...this.state,location: location})
+          }, 5000);
           
     }
 
@@ -112,9 +111,7 @@ class GoogleMapHomeClass extends React.Component {
                                 <Text>{office_schedule}</Text> 
                                 <Button
                                 title='Ver mas'
-                                />
-
-                               
+                                /> 
                     </Callout>   
                 </Marker>
             )
@@ -162,6 +159,7 @@ class GoogleMapHomeClass extends React.Component {
                     destination={{latitude: this.state.destination.latitude,longitude: this.state.destination.longitude}}
                     apikey={GOOGLE_MAPS_APIKEY}
                     strokeWidth={7}
+                    resetOnChange={false}
                     strokeColor="green"
                     mode ='WALKING'
         /> 
