@@ -80,7 +80,7 @@ class GoogleMapHomeClass extends React.Component {
             const newLatitude = this.props.route.params.office_latitude
             const newLongitude = this.props.route.params.office_longitude
             if(newLatitude !== initialPosition.latitude && newLongitude !== initialPosition.longitude) {
-                this.updateDestination(newLatitude, newLongitude)
+                this.updateDestination(newLatitude, newLongitude,this.props.route.params)
                 this.mountRoute()
             }
         }
@@ -99,7 +99,7 @@ class GoogleMapHomeClass extends React.Component {
                 coordinate={{latitude: office_latitude, longitude: office_longitude}}
                 icon = {require('../map/pawPinSmall.png')} 
                 onPress = {() => {
-                    this.updateDestination(office_latitude,office_longitude,index)  
+                    this.updateDestination(office_latitude,office_longitude,office)  
                 }
             }
                 >
@@ -120,8 +120,8 @@ class GoogleMapHomeClass extends React.Component {
             )
         })
     }
-    updateDestination = (office_latitude , office_longitude,index) => {
-        this.state.previewOffice = this.state.offices[index];
+    updateDestination = (office_latitude , office_longitude,office) => {
+        this.state.previewOffice = office;
         this.updateOrigin();
         this.state.destination.latitude=office_latitude;
         this.state.destination.longitude=office_longitude;
