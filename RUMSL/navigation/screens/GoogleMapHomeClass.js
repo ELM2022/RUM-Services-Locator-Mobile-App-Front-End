@@ -7,6 +7,7 @@ import {getAllOffices} from '../../handler/directoryHandler';
 import { Button } from 'react-native-elements';
 
 
+const { width, height } = Dimensions.get('window');
 const GOOGLE_MAPS_APIKEY = 'AIzaSyAQW5Yo0EM3l4Who0_9suk42tpMwbNSCG8';
 let initialPosition = {
     latitude: 18.2122765,
@@ -29,7 +30,12 @@ class GoogleMapHomeClass extends React.Component {
         officeMarker:[],
         routes : false,
         previewBoolean : false,
+        livesRoutes : false,
+        preview : false,
+        renderCancel : false,
+        intervalState : false,
         previewOffice : {},
+        liveInterval: null,
         destination : {latitude: 18.2095366, longitude: -67.1407473}
        };
     }
@@ -43,6 +49,32 @@ class GoogleMapHomeClass extends React.Component {
               this.setState({...this.state,location: location})
     }
 
+    async startLiveRoute(){
+        console.log("Starting Live Routing");
+        //this.state.routes = false;
+        //console.log(this.state.livesRoutes);
+        this.state.liveInterval = setInterval(async() => {
+
+          if(this.state.intervalState){
+                //this.state.livesRoutes = true;//display live routes
+                      if (this.state.permissionStatus !== 'granted') {
+                          this.setState({...this.state,errorMsg:'Permission to access location was denied'})
+                          return;
+                        }
+                        console.log("Routing!!");
+                        let location = await Location.getCurrentPositionAsync({});
+                        this.setState({...this.state,location: location})
+                      }    
+            }, 5000);
+         }
+
+         cancelLiveRoute(){
+          clearInterval(this.state.liveInterval)
+          console.log("Did cancel interval??");
+        }
+
+                 
+
     async componentDidMount(){
         getAllOffices().then(res => {
             this.setState({...this.state,offices:res.data.data.offices})
@@ -54,7 +86,6 @@ class GoogleMapHomeClass extends React.Component {
               this.setState({...this.state,errorMsg:'Permission to access location was denied'})
               return;
             }
-            //console.log(this.state.location.coords.latitude)
             let location = await Location.getCurrentPositionAsync({});
             this.setState({...this.state,location: location})
             //console.log(this.state.location.coords.latitude)
@@ -129,12 +160,6 @@ class GoogleMapHomeClass extends React.Component {
     mountRoute(){
         this.setState({...this.state,routes:true})
         console.log(this.state.routes)
-        this._map.animateToRegion({
-          latitude: this.state.destination.latitude + 0.0020132, //change in coords to fit preview properly under description
-          longitude: this.state.destination.longitude + 0.0000405, // ^same
-          latitudeDelta: 0.008,
-          longitudeDelta: 0.00755
-          });
     }
     renderRoutes() {
         async() => {
@@ -162,8 +187,18 @@ class GoogleMapHomeClass extends React.Component {
                         if(result.distance * FOOT_CONVERSION < 20){
                             Alert.alert("You have arrived!!")
                         }
-                    }}
+          
+                        this._map.fitToCoordinates(result.coordinates, {
+                          edgePadding: {
+                            right: (width / 20),
+                            bottom: (height /20) +50,
+                            left: (width / 20),
+                            top: (height - 358),
+                          }
+                        });
+                      }}
         /> 
+        
         )
     }
     renderPreviewDescription(){
@@ -182,7 +217,15 @@ class GoogleMapHomeClass extends React.Component {
         <Pressable
         
         style={styles.startButton}>
-        <Text style={styles.textButton} >Comenzar</Text>
+        <Text style={styles.textButton} 
+        onPress={() => {
+            this.state.livesRoutes=true;
+            this.state.intervalState=true;
+            this.state.routes=false;
+            this.state.renderCancel = true;
+            this.startLiveRoute();
+          }}
+          >Comenzar</Text>
         </Pressable>
         <Pressable
         style={styles.cancelButton}
@@ -199,9 +242,36 @@ class GoogleMapHomeClass extends React.Component {
         
         )
     }
-    
-    hideRoute(){
+
+    renderCancelButton(){
+        console.log("renderCANCELBUTTON!!");
+        return(
+        <View style={styles.cancelButtonView}>
+        <Pressable
+        style={styles.cancelButtonLiveRoute}
+        onPress={() => {
+            this.cancelLiveRoute()
+            //this.setState({...this.state,livesRoutes:false}) 
+            //this.setState({...this.state,routes:true}) 
+            this.state.routes = true;
+            this.state.livesRoutes = false;
+            this.state.renderCancel = false;
+            //this.setState({...this.state,renderCancel:false})
+            this.setState({...this.state,intervalState:false}) 
+            console.log("Cancel Button____"+"  LiveRoute render="+this.state.livesRoutes +"  Route Preview="+this.state.routes+"  Cancel render="+this.state.renderCancel);
+          }}
+        >
+       <Text 
+       style={styles.textButtonLiveRoute}
+       >Cancel</Text>
+        </Pressable>
+        </View>
         
+        
+        )
+    }
+
+    hideRoute(){
         if(this.state.routes === true ){
             this.setState({...this.state,routes:false})    
         }  
@@ -213,6 +283,7 @@ class GoogleMapHomeClass extends React.Component {
             {/*Render our MapView*/}
             
               <MapView
+              toolbarEnabled = {false}
               showsMyLocationButton = {true}
               ref={map => this._map = map}
               provider={PROVIDER_GOOGLE}
@@ -220,16 +291,19 @@ class GoogleMapHomeClass extends React.Component {
                 //specify our coordinates.
                 initialRegion={initialPosition}
                 showsUserLocation={true}
-                onPress={() => {
-                    if(this.state.routes === true ){
-                        this.setState({...this.state,routes:false})    
-                    } 
-                  }}
+                // onPress={() => {
+                //     if(this.state.routes === true ){
+                //         this.setState({...this.state,routes:false})    
+                //     } 
+                //   }}
               >
                   {this.renderMarkers()}
                   {this.state.routes && this.renderRoutes()}
+                  {this.state.livesRoutes && this.renderRoutes()}
+                  
             </MapView>
                    {this.state.routes && this.renderPreviewDescription()} 
+                   {this.state.renderCancel && this.renderCancelButton()}
             </View>
            
             
@@ -321,9 +395,35 @@ const styles = StyleSheet.create({
         
         
       },
+      cancelButtonLiveRoute: {
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 4,
+        elevation: 3,
+        backgroundColor: 'red',
+        position: 'absolute',
+        bottom: (-0.95) * Dimensions.get('window').height,
+        marginBottom: 48,
+        right:2,
+        width: (Dimensions.get('window').width / 2 ) - 60,
+        borderRadius: 24
+        
+      },
       textButton: {
         color: 'white',
        
+      },
+      textButtonLiveRoute: {
+        color: 'white',
+       
+      },
+      cancelButtonView:{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        //marginTop: 48
       }
       
   });
