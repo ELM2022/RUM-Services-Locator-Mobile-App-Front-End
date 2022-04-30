@@ -1,5 +1,5 @@
 import * as React from 'react';
-import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable } from 'react-native';
+import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Alert } from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker, Callout} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
@@ -14,6 +14,8 @@ let initialPosition = {
     latitudeDelta: 0.008,
     longitudeDelta: 0.00755
   };
+
+  const FOOT_CONVERSION = 3280.84;
 
 class GoogleMapHomeClass extends React.Component {
     constructor(props) {
@@ -33,14 +35,12 @@ class GoogleMapHomeClass extends React.Component {
     }
 
      async updateOrigin(){
-        
             if (this.state.permissionStatus !== 'granted') {
                 this.setState({...this.state,errorMsg:'Permission to access location was denied'})
                 return;
               }
               let location = await Location.getCurrentPositionAsync({});
               this.setState({...this.state,location: location})
-              //console.log("Updated 111 to: " + this.state.location.coords.latitude);
     }
 
     async componentDidMount(){
@@ -122,7 +122,6 @@ class GoogleMapHomeClass extends React.Component {
         this.updateOrigin();
         this.state.destination.latitude=office_latitude;
         this.state.destination.longitude=office_longitude;
-        //this._carousel.snapToItem(index);
         
     }
     
@@ -130,9 +129,6 @@ class GoogleMapHomeClass extends React.Component {
     mountRoute(){
         this.setState({...this.state,routes:true})
         console.log(this.state.routes)
-        // this.setState({...this.state,previewBoolean:true})
-        // console.log(this.state.previewBoolean)
-        //this.setState({...this.state,carouselBoolean:true})
         this._map.animateToRegion({
           latitude: this.state.destination.latitude + 0.0020132, //change in coords to fit preview properly under description
           longitude: this.state.destination.longitude + 0.0000405, // ^same
@@ -147,9 +143,7 @@ class GoogleMapHomeClass extends React.Component {
                 return;
             }
             let location = await Location.getCurrentPositionAsync({});
-           // console.log(await Location.getCurrentPositionAsync({}));
             this.setState({...this.state,location: location})
-            //this.state.location=location;
         }
         
 
@@ -162,6 +156,13 @@ class GoogleMapHomeClass extends React.Component {
                     resetOnChange={false}
                     strokeColor="green"
                     mode ='WALKING'
+                    onReady={result => {
+                        console.log(`Distance to destination in km: ${result.distance}`)
+                        console.log(`Distance to destination in feet is: ${result.distance * FOOT_CONVERSION}`)
+                        if(result.distance * FOOT_CONVERSION < 20){
+                            Alert.alert("You have arrived!!")
+                        }
+                    }}
         /> 
         )
     }
@@ -198,37 +199,12 @@ class GoogleMapHomeClass extends React.Component {
         
         )
     }
-
-    // onCarouselItemChange = (index) => {
-    //     let location = this.state.offices[index];
-    
-    //     this._map.animateToRegion({
-    //       latitude: location.office_latitude + 0.0020132, //change in coords to fit preview properly under description
-    //       longitude: location.office_longitude + 0.0000405, // ^same
-    //       latitudeDelta: 0.008,
-    //       longitudeDelta: 0.00755
-    //     })
-    
-    //     this.state.officeMarker[index].showCallout()
-    //   }
-
-    // renderCarouselItem = ({ item }) => 
-        
-    //     <View style={styles.cardContainer}>
-    //         <ScrollView>
-    //         <Text style={styles.cardTitle}>{item.office_name}</Text>
-    //         <Text style={styles.cardHours}>{item.office_schedule}</Text>
-    //         <Text style={styles.cardHours}>{item.office_phone_number}</Text>
-    //         <Text style={styles.cardImage}>{item.office_description}</Text>
-    //         </ScrollView>
-    //     </View>
     
     hideRoute(){
         
         if(this.state.routes === true ){
             this.setState({...this.state,routes:false})    
         }  
-            //console.log("Route= " + this.state.routes + "    previewBool= " + this.state.previewBoolean) 
     }
 
     render(){
