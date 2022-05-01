@@ -11,6 +11,6 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "description": "Testing Route Re-Render pt 2"
+    "description": "Testing Route End"
   }
 }

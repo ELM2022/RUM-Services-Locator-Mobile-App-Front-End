@@ -31,6 +31,7 @@ class GoogleMapHomeClass extends React.Component {
         routes : false,
         previewBoolean : false,
         livesRoutes : false,
+        instructions: false,
         preview : false,
         renderCancel : false,
         intervalState : false,
@@ -51,12 +52,9 @@ class GoogleMapHomeClass extends React.Component {
 
     async startLiveRoute(){
         console.log("Starting Live Routing");
-        //this.state.routes = false;
-        //console.log(this.state.livesRoutes);
         this.state.liveInterval = setInterval(async() => {
 
           if(this.state.intervalState){
-                //this.state.livesRoutes = true;//display live routes
                       if (this.state.permissionStatus !== 'granted') {
                           this.setState({...this.state,errorMsg:'Permission to access location was denied'})
                           return;
@@ -70,7 +68,6 @@ class GoogleMapHomeClass extends React.Component {
 
          cancelLiveRoute(){
           clearInterval(this.state.liveInterval)
-          console.log("Did cancel interval??");
         }
 
                  
@@ -87,19 +84,7 @@ class GoogleMapHomeClass extends React.Component {
               return;
             }
             let location = await Location.getCurrentPositionAsync({});
-            this.setState({...this.state,location: location})
-            //console.log(this.state.location.coords.latitude)
-          
-
-            setInterval(async() => {
-                  if (this.state.permissionStatus !== 'granted') {
-                      this.setState({...this.state,errorMsg:'Permission to access location was denied'})
-                      return;
-                    }
-                    let location = await Location.getCurrentPositionAsync({});
-                    this.setState({...this.state,location: location})
-          }, 5000);
-          
+            this.setState({...this.state,location: location})        
     }
 
     componentDidUpdate(prevProps) {
@@ -159,7 +144,6 @@ class GoogleMapHomeClass extends React.Component {
 
     mountRoute(){
         this.setState({...this.state,routes:true})
-        console.log(this.state.routes)
     }
     renderRoutes() {
         async() => {
@@ -182,10 +166,14 @@ class GoogleMapHomeClass extends React.Component {
                     strokeColor="green"
                     mode ='WALKING'
                     onReady={result => {
-                        console.log(`Distance to destination in km: ${result.distance}`)
-                        console.log(`Distance to destination in feet is: ${result.distance * FOOT_CONVERSION}`)
                         if(result.distance * FOOT_CONVERSION < 20){
-                            Alert.alert("You have arrived!!")
+                            //this.state.intervalState = false;
+                            this.cancelLiveRoute();
+                            this.state.routes = false;
+                            this.state.livesRoutes = false;
+                            this.state.renderCancel = false;
+                            this.setState({...this.state,intervalState:false}) 
+                            this.setState({...this.state, instructions: true})
                         }
           
                         this._map.fitToCoordinates(result.coordinates, {
@@ -202,6 +190,7 @@ class GoogleMapHomeClass extends React.Component {
         )
     }
     renderPreviewDescription(){
+        console.log(`The state of the interval is = ${this.state.intervalState}`)
         let item = this.state.previewOffice
         return(
             
@@ -244,7 +233,6 @@ class GoogleMapHomeClass extends React.Component {
     }
 
     renderCancelButton(){
-        console.log("renderCANCELBUTTON!!");
         return(
         <View style={styles.cancelButtonView}>
         <Pressable
@@ -258,7 +246,6 @@ class GoogleMapHomeClass extends React.Component {
             this.state.renderCancel = false;
             //this.setState({...this.state,renderCancel:false})
             this.setState({...this.state,intervalState:false}) 
-            console.log("Cancel Button____"+"  LiveRoute render="+this.state.livesRoutes +"  Route Preview="+this.state.routes+"  Cancel render="+this.state.renderCancel);
           }}
         >
        <Text 
@@ -266,8 +253,33 @@ class GoogleMapHomeClass extends React.Component {
        >Cancel</Text>
         </Pressable>
         </View>
-        
-        
+        )
+    }
+
+    renderInstructions() {
+        let item = this.state.previewOffice
+        return( 
+            <View style={styles.carousel}>
+        <View style={styles.cardContainer}>
+            <ScrollView>
+                <Text style={styles.cardTitle}>{item.office_name}</Text>
+                <Text style={styles.cardHours}>{item.office_schedule}</Text>
+                <Text style={styles.cardHours}>{item.office_phone_number}</Text>
+                <Text style={styles.cardImage}>{item.office_description}</Text>
+            </ScrollView>
+        </View>
+        <Pressable
+        style={styles.cancelButton}
+        onPress={() => {
+                if(this.state.instructions === true ){
+                    this.setState({...this.state,instructions:false}) 
+                }   
+            } 
+        }
+        >
+       <Text style={styles.textButton} >Entendido</Text>
+        </Pressable>
+        </View>
         )
     }
 
@@ -304,6 +316,7 @@ class GoogleMapHomeClass extends React.Component {
             </MapView>
                    {this.state.routes && this.renderPreviewDescription()} 
                    {this.state.renderCancel && this.renderCancelButton()}
+                   {this.state.instructions && this.renderInstructions()}
             </View>
            
             
