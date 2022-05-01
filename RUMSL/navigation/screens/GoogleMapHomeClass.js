@@ -166,16 +166,6 @@ class GoogleMapHomeClass extends React.Component {
                     strokeColor="green"
                     mode ='WALKING'
                     onReady={result => {
-                        if(result.distance * FOOT_CONVERSION < 20){
-                            //this.state.intervalState = false;
-                            this.cancelLiveRoute();
-                            this.state.routes = false;
-                            this.state.livesRoutes = false;
-                            this.state.renderCancel = false;
-                            this.setState({...this.state,intervalState:false}) 
-                            this.setState({...this.state, instructions: true})
-                        }
-          
                         this._map.fitToCoordinates(result.coordinates, {
                           edgePadding: {
                             right: (width / 20),
@@ -189,6 +179,41 @@ class GoogleMapHomeClass extends React.Component {
         
         )
     }
+
+    renderLiveRoutes() {
+            async() => {
+                if (this.state.permissionStatus !== 'granted') {
+                    this.setState({...this.state,errorMsg:'Permission to access location was denied'})
+                    return;
+                }
+                let location = await Location.getCurrentPositionAsync({});
+                this.setState({...this.state,location: location})
+            }
+            return(
+             <MapViewDirections
+                        origin={{latitude: this.state.location.coords.latitude,longitude: this.state.location.coords.longitude}}
+                        destination={{latitude: this.state.destination.latitude,longitude: this.state.destination.longitude}}
+                        apikey={GOOGLE_MAPS_APIKEY}
+                        strokeWidth={7}
+                        resetOnChange={false}
+                        strokeColor="green"
+                        mode ='WALKING'
+                        onReady={result => {
+                            if(result.distance * FOOT_CONVERSION < 20){
+                                //this.state.intervalState = false;
+                                this.cancelLiveRoute();
+                                this.state.routes = false;
+                                this.state.livesRoutes = false;
+                                this.state.renderCancel = false;
+                                this.setState({...this.state,intervalState:false}) 
+                                this.setState({...this.state, instructions: true})
+                            }
+                          }}
+            /> 
+            
+            )
+        }
+
     renderPreviewDescription(){
         console.log(`The state of the interval is = ${this.state.intervalState}`)
         let item = this.state.previewOffice
@@ -208,10 +233,11 @@ class GoogleMapHomeClass extends React.Component {
         style={styles.startButton}>
         <Text style={styles.textButton} 
         onPress={() => {
-            this.state.livesRoutes=true;
             this.state.intervalState=true;
             this.state.routes=false;
             this.state.renderCancel = true;
+            this.state.livesRoutes = true;
+            this.setState({...this.state, liveRoutes:true})
             this.startLiveRoute();
           }}
           >Comenzar</Text>
@@ -233,6 +259,7 @@ class GoogleMapHomeClass extends React.Component {
     }
 
     renderCancelButton(){
+        console.log('Render Cancel Button!')
         return(
         <View style={styles.cancelButtonView}>
         <Pressable
@@ -311,7 +338,7 @@ class GoogleMapHomeClass extends React.Component {
               >
                   {this.renderMarkers()}
                   {this.state.routes && this.renderRoutes()}
-                  {this.state.livesRoutes && this.renderRoutes()}
+                  {this.state.livesRoutes && this.renderLiveRoutes()}
                   
             </MapView>
                    {this.state.routes && this.renderPreviewDescription()} 
@@ -386,9 +413,7 @@ const styles = StyleSheet.create({
         marginBottom: 48,
         left: 0,
         width: (Dimensions.get('window').width / 2 ) - 50,
-        borderRadius: 24
-        
-        
+        borderRadius: 24 
       },
       cancelButton: {
         alignItems: 'center',
@@ -403,10 +428,7 @@ const styles = StyleSheet.create({
         marginBottom: 48,
         right:0,
         width: (Dimensions.get('window').width / 2 ) - 55,
-        borderRadius: 24
-        
-        
-        
+        borderRadius: 24 
       },
       cancelButtonLiveRoute: {
         alignItems: 'center',
@@ -436,7 +458,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 0,
         right: 0,
-        //marginTop: 48
       }
       
   });
