@@ -6,7 +6,10 @@ import * as Location from 'expo-location';
 import {getAllOffices} from '../../handler/directoryHandler';
 import { Button } from 'react-native-elements';
 //import Carousel from 'react-native-snap-carousel';
-
+//import { Gyroscope } from 'expo-sensors';
+//import { gyroscope } from 'react-native-sensors';
+//import Location from 'expo-location';
+import { Magnetometer } from 'expo-sensors';
 
 const { width, height } = Dimensions.get('window');
 const GOOGLE_MAPS_APIKEY = 'AIzaSyAQW5Yo0EM3l4Who0_9suk42tpMwbNSCG8';
@@ -35,9 +38,31 @@ class GoogleMapHomeClass extends React.Component {
         intervalState : false,
         previewOffice : {},
         liveInterval: null,
-        destination : {latitude: 18.2095366, longitude: -67.1407473}
+        headingInterval: null,
+        destination : {latitude: 18.2095366, longitude: -67.1407473},
+        subscription: null,
+        magnetometer: {}
        };
     }
+
+    _subscribe(){
+      this.setState({...this.state,subscription:Magnetometer.addListener((data)=>{
+        this.state.magnetometer=this._angle(data)})
+      })
+    }
+
+     _angle (magnetometer){
+      let angle = 0;
+      if (magnetometer) {
+        let { x, y, z } = magnetometer;
+        if (Math.atan2(y, x) >= 0) {
+          angle = Math.atan2(y, x) * (180 / Math.PI);
+        } else {
+          angle = (Math.atan2(y, x) + 2 * Math.PI) * (180 / Math.PI);
+        }
+      }
+      return Math.round(angle);
+    };
 
      async updateOrigin(){
             if (this.state.permissionStatus !== 'granted') {
@@ -47,13 +72,22 @@ class GoogleMapHomeClass extends React.Component {
               let location = await Location.getCurrentPositionAsync({});
               this.setState({...this.state,location: location})
     }
+    updateHeading(){
+      console.log("Starting Update Heading");
+       this.state.headingInterval = setInterval(async() => {
+          if(this.state.intervalState){
+          console.log("Angle="+ this.state.magnetometer);
+           this._map.animateCamera({center: {latitude: this.state.location.coords.latitude,longitude: this.state.location.coords.longitude},pitch: 0, heading: this.state.magnetometer + 270,altitude: 0, zoom:20},500)
+      }
+     }, 1000);
+    }
 
     async startLiveRoute(){
+        this._subscribe();
+        Magnetometer.setUpdateInterval(500);
+        this.updateHeading();
         console.log("Starting Live Routing");
-        //this.state.routes = false;
-        //console.log(this.state.livesRoutes);
         this.state.liveInterval = setInterval(async() => {
-
           if(this.state.intervalState){
                 //this.state.livesRoutes = true;//display live routes
                       if (this.state.permissionStatus !== 'granted') {
@@ -68,7 +102,8 @@ class GoogleMapHomeClass extends React.Component {
          }
 
          cancelLiveRoute(){
-          clearInterval(this.state.liveInterval)
+          clearInterval(this.state.liveInterval);
+          clearInterval(this.state.headingInterval);
           console.log("Did cancel interval??");
         }
 
@@ -159,6 +194,7 @@ class GoogleMapHomeClass extends React.Component {
     
 
     mountRoute(){
+      
         this.setState({...this.state,routes:true})
         console.log(this.state.routes)
     }
@@ -181,17 +217,17 @@ class GoogleMapHomeClass extends React.Component {
                     strokeWidth={7}
                     strokeColor="green"
                     mode ='WALKING'
-                    onReady={result => {
+                    // onReady={result => {
           
-                        this._map.fitToCoordinates(result.coordinates, {
-                          edgePadding: {
-                            right: (width / 20),
-                            bottom: (height /20) +50,
-                            left: (width / 20),
-                            top: (height - 358),
-                          }
-                        });
-                      }}
+                    //     this._map.fitToCoordinates(result.coordinates, {
+                    //       edgePadding: {
+                    //         right: (width / 20),
+                    //         bottom: (height /20) +50,
+                    //         left: (width / 20),
+                    //         top: (height - 358),
+                    //       }
+                    //     });
+                    //   }}
         /> 
         
         )
@@ -219,6 +255,7 @@ class GoogleMapHomeClass extends React.Component {
             this.state.routes=false;
             this.state.renderCancel = true;
             this.startLiveRoute();
+           // this.updateHeading()
           }}
           >Comenzar</Text>
         </Pressable>
@@ -246,6 +283,8 @@ class GoogleMapHomeClass extends React.Component {
         style={styles.cancelButtonLiveRoute}
         onPress={() => {
             this.cancelLiveRoute()
+            this.state.subscription.remove();
+            this.state.subscription=null;
             //this.setState({...this.state,livesRoutes:false}) 
             //this.setState({...this.state,routes:true}) 
             this.state.routes = true;
@@ -266,6 +305,7 @@ class GoogleMapHomeClass extends React.Component {
         )
     }
 
+
     hideRoute(){
         if(this.state.routes === true ){
             this.setState({...this.state,routes:false})    
@@ -279,6 +319,7 @@ class GoogleMapHomeClass extends React.Component {
             {/*Render our MapView*/}
             
               <MapView
+              
               toolbarEnabled = {false}
               showsMyLocationButton = {true}
               ref={map => this._map = map}
