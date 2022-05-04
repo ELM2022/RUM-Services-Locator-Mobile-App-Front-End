@@ -309,7 +309,7 @@ renderAllDropdowns(){
          selectedTextStyle={styles.text}
          onChange={item => {
            console.log(item)
-           //this.props.navigation.navigate('Inicio', item.office)
+           this.props.navigation.navigate('Inicio', item)
          }}
         >
          <Text style={styles.text}>{offices.office_name}</Text>

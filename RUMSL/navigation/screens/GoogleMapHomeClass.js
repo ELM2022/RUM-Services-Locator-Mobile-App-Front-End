@@ -3,7 +3,7 @@ import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Al
 import MapView, {PROVIDER_GOOGLE, Marker, Callout} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-import {getAllOffices} from '../../handler/directoryHandler';
+import {getAllOffices, getOfficeByID} from '../../handler/directoryHandler';
 import { Button } from 'react-native-elements';
 
 
