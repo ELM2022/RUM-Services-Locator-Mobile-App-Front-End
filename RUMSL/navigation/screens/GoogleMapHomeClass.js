@@ -75,7 +75,6 @@ class GoogleMapHomeClass extends React.Component {
     async componentDidMount(){
         getAllOffices().then(res => {
             this.setState({...this.state,offices:res.data.data.offices})
-            console.log("get All Offices");
          })
             let { status } = await Location.requestForegroundPermissionsAsync();
             this.setState({...this.state,permissionStatus:status})
