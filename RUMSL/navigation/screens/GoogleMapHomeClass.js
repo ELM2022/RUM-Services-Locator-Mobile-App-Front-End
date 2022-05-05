@@ -138,7 +138,9 @@ class GoogleMapHomeClass extends React.Component {
             const newLongitude = this.props.route.params.office_longitude
             if(newLatitude !== initialPosition.latitude && newLongitude !== initialPosition.longitude) {
                 this.updateDestination(newLatitude, newLongitude,this.props.route.params)
+                this.updateOrigin()
                 this.mountRoute()
+                
             }
         }
     }
@@ -355,7 +357,7 @@ class GoogleMapHomeClass extends React.Component {
                 <Text style={styles.cardImage}>{item.office_description}</Text>
             </ScrollView>
         <Pressable
-        style={styles.cancelButtonLiveRoute}
+        style={styles.finishButton}
         onPress={() => {
                 if(this.state.instructions === true ){
                     this.setState({...this.state,instructions:false}) 
@@ -471,7 +473,7 @@ const styles = StyleSheet.create({
         elevation: 3,
         backgroundColor: '#0080FF',
         position: 'absolute',
-        bottom: (-0.568) * Dimensions.get('window').height,
+        bottom: (-0.568) * Dimensions.get('window').height, //(-0.4 para que se vea en android)
         marginBottom: 48,
         left: 0,
         width: (Dimensions.get('window').width / 2 ) - 50,
@@ -492,7 +494,7 @@ const styles = StyleSheet.create({
         width: (Dimensions.get('window').width / 2 ) - 55,
         borderRadius: 24 
       },
-      cancelButtonLiveRoute: {
+      finishButton: {
         alignItems: 'center',
         justifyContent: 'flex-end',
         paddingVertical: 12,
@@ -506,6 +508,21 @@ const styles = StyleSheet.create({
         right:0,
         width: (Dimensions.get('window').width / 2 ) - 55,
         borderRadius: 24 
+      },
+      cancelButtonLiveRoute: {
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 4,
+        elevation: 3,
+        backgroundColor: 'red',
+        position: 'absolute',
+        bottom: (-0.95) * Dimensions.get('window').height,
+        marginBottom: 48,
+        right:2,
+        width: (Dimensions.get('window').width / 2 ) - 60,
+        borderRadius: 24
         
       },
       textButton: {

@@ -11,6 +11,6 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "description": "Testing end camera animation"
+    "description": "Testing end routing through directory"
   }
 }
