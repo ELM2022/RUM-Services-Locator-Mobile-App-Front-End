@@ -8,9 +8,10 @@
     "name": "RUMSL",
     "slug": "RUMSL",
     "version": "1.0.0",
+    "orientation": "portrait",
     "assetBundlePatterns": [
       "**/*"
     ],
-    "description": "Testing end routing through directory"
+    "description": "Testing Changes to Entrances\n"
   }
 }

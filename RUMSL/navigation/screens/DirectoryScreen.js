@@ -5,7 +5,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { createStackNavigator, createAppContainer } from 'react-navigation';
 import { useIsFocused } from '@react-navigation/native';
 
-import {getAllOffices, getAutoComplete} from '../../handler/directoryHandler';
+import {getAllOffices, getAutoComplete, getAllOfficesByCategories} from '../../handler/directoryHandler';
 
 
 //import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -81,6 +81,7 @@ class Table extends Component {
       super(props) //override Component class constructor
       this.state = { //state is by default an object
          Offices: [],
+         Categories: []
       }
    }
 
@@ -262,9 +263,11 @@ renderTableDropDownMatricula() {
 
 componentDidMount(){
    getAllOffices().then(res => {
-      this.setState({Offices:res.data.data.offices})
+      this.setState({...this.state, Offices:res.data.data.offices})
    })
-  
+   getAllOfficesByCategories().then((res) => {
+     this.setState({...this.state, Categories:res.data})
+   })
 }
 
  renderTableData() {
@@ -285,17 +288,48 @@ componentDidMount(){
       )
    })
 }
+
+renderAllDropdowns(){
+  //console.log(this.state.Categories)
+  return (this.state.Categories.map((category, index) => {
+    //console.log(`The category is: ${category.category_name}`)
+    //console.log(`The offices are: ${category.offices.office_name}`)
+    const {category_name, offices} = category;
+    //console.log(offices)
+      return(
+        <Dropdown
+         key={index}
+         style={styles.button}
+         data={offices}
+         maxHeight={130}
+         labelField="office_name"
+         valueField="office_name"
+         placeholder={category_name}
+         placeholderStyle={styles.text}
+         selectedTextStyle={styles.text}
+         onChange={item => {
+           console.log(item)
+           this.props.navigation.navigate('Inicio', item)
+         }}
+        >
+         <Text style={styles.text}>{offices.office_name}</Text>
+       </Dropdown>
+      )
+    })
+    )
+}
     render() {
         return (
            <View style={styles.scrollView}>
              <ScrollView  id='students'> 
-                      {this.renderTableDropDownNuevoIngreso()} 
+                      {/* {this.renderTableDropDownNuevoIngreso()} 
                       {this.renderTableDropDownSeguridad()} 
                       {this.renderTableDropDownSalud()}
                       {this.renderTableDropDownConsejeria()}
                       {this.renderTableDropDownAsistenciaAcademica()}
                       {this.renderTableDropDownAsistenciaProfesional()}
-                      {this.renderTableDropDownMatricula()} 
+                      {this.renderTableDropDownMatricula()} */}
+                      {this.renderAllDropdowns()} 
                       <View ><Text style = {styles.directoryDivisions}>Servicios</Text></View>
                       {this.renderTableData()}  
              </ScrollView>

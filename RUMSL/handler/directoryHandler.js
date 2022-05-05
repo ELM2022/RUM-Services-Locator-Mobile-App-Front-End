@@ -40,6 +40,28 @@ export const getServices = (inputKeyword) => {
         })
 }
 
+export const getAllOfficesByCategories = () => {
+    return axios
+    .get(`https://rumsl-backend.herokuapp.com/offices/category/membership`)
+    .then((response) => {
+        return response;
+    })
+    .catch((err) => {
+        return err.response;
+    })
+}
+
+export const getOfficeByID = (officeID) => {
+    return axios
+    .get(`https://rumsl-backend.herokuapp.com/offices/${officeID}`)
+    .then((response) => {
+        return response;
+    })
+    .catch((err) => {
+        return err.response;
+    })
+}
+
 
 
 
