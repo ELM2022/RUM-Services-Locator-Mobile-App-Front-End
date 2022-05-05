@@ -3,7 +3,7 @@ import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Al
 import MapView, {PROVIDER_GOOGLE, Marker, Callout} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-import {getAllOffices} from '../../handler/directoryHandler';
+import {getAllOffices, getOfficeByID} from '../../handler/directoryHandler';
 import { Button } from 'react-native-elements';
 
 
@@ -75,7 +75,6 @@ class GoogleMapHomeClass extends React.Component {
     async componentDidMount(){
         getAllOffices().then(res => {
             this.setState({...this.state,offices:res.data.data.offices})
-            console.log("get All Offices");
          })
             let { status } = await Location.requestForegroundPermissionsAsync();
             this.setState({...this.state,permissionStatus:status})
