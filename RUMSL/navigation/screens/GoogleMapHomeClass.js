@@ -307,6 +307,16 @@ class GoogleMapHomeClass extends React.Component {
         )
     }
 
+    renderEndMarker() {
+      return (
+        <Marker
+        pinColor='#FFC5AA'
+        coordinate={{latitude: this.state.destination.latitude, longitude: this.state.destination.longitude}}
+        icon= {require('../map/endPin.png')} 
+        />    
+      )
+    }
+
     hideRoute(){
         if(this.state.routes === true ){
             this.setState({...this.state,routes:false})    
@@ -336,6 +346,7 @@ class GoogleMapHomeClass extends React.Component {
                   {this.renderMarkers()}
                   {this.state.routes && this.renderRoutes()}
                   {this.state.livesRoutes && this.renderLiveRoutes()}
+                  {this.state.livesRoutes && this.renderEndMarker()}
                   
             </MapView>
                    {this.state.routes && this.renderPreviewDescription()} 
