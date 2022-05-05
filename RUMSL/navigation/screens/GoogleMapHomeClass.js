@@ -1,5 +1,5 @@
 import * as React from 'react';
-import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Alert } from 'react-native';
+import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Alert, SafeAreaView, Platform } from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker, Callout} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
@@ -217,7 +217,7 @@ class GoogleMapHomeClass extends React.Component {
         console.log(`The state of the interval is = ${this.state.intervalState}`)
         let item = this.state.previewOffice
         return(
-            
+            <View style={styles.preview}>
             <View style={styles.carousel}>
         <View style={styles.cardContainer}>
             <ScrollView>
@@ -227,6 +227,8 @@ class GoogleMapHomeClass extends React.Component {
                 <Text style={styles.cardImage}>{item.office_description}</Text>
             </ScrollView>
         </View>
+        </View>
+        <View style={styles.buttons}>
         <Pressable
         
         style={styles.startButton}>
@@ -252,13 +254,11 @@ class GoogleMapHomeClass extends React.Component {
        <Text style={styles.textButton} >Salir</Text>
         </Pressable>
         </View>
-        
-        
+        </View>    
         )
     }
 
     renderCancelButton(){
-        console.log('Render Cancel Button!')
         return(
         <View style={styles.cancelButtonView}>
         <Pressable
@@ -408,6 +408,16 @@ const styles = StyleSheet.create({
         fontSize: 14,
         alignSelf: 'center'
       },
+      preview: {
+        position: 'absolute',
+        top: 0,
+        alignItems: 'center'
+      },
+      buttons: {
+        position: 'absolute',
+        bottom: 0,
+        marginBottom:48
+      },
       startButton: {
         alignItems: 'center',
         justifyContent: 'flex-start',
@@ -417,9 +427,8 @@ const styles = StyleSheet.create({
         elevation: 3,
         backgroundColor: '#0080FF',
         position: 'absolute',
-        bottom: (-0.568) * Dimensions.get('window').height,
-        marginBottom: 48,
-        left: 0,
+        bottom: (-0.95) * Dimensions.get('window').height,
+        right: 48,
         width: (Dimensions.get('window').width / 2 ) - 50,
         borderRadius: 24 
       },
@@ -432,9 +441,8 @@ const styles = StyleSheet.create({
         elevation: 3,
         backgroundColor: 'red',
         position: 'absolute',
-        bottom: (-0.568) * Dimensions.get('window').height,
-        marginBottom: 48,
-        right:0,
+        bottom: (-0.95) * Dimensions.get('window').height,
+        left:48,
         width: (Dimensions.get('window').width / 2 ) - 55,
         borderRadius: 24 
       },
