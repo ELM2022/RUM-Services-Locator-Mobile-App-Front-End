@@ -73,28 +73,28 @@ class GoogleMapHomeClass extends React.Component {
               this.setState({...this.state,location: location})
     }
     updateHeading(){
-      console.log("Starting Update Heading");
+      //console.log("Starting Update Heading");
        this.state.headingInterval = setInterval(async() => {
           if(this.state.intervalState){
-          console.log("Angle="+ this.state.magnetometer);
+          //console.log("Angle="+ this.state.magnetometer);
            this._map.setCamera({center: {latitude: this.state.location.coords.latitude,longitude: this.state.location.coords.longitude},pitch: 0, heading: this.state.magnetometer + 270,altitude: 0, zoom:20})
             
           }
-     }, 500);
+     }, 125);
     }
 
     async startLiveRoute(){
         this._subscribe();
         Magnetometer.setUpdateInterval(250);
         this.updateHeading();
-        console.log("Starting Live Routing");
+        //console.log("Starting Live Routing");
         this.state.liveInterval = setInterval(async() => {
           if(this.state.intervalState){
                       if (this.state.permissionStatus !== 'granted') {
                           this.setState({...this.state,errorMsg:'Permission to access location was denied'})
                           return;
                         }
-                        console.log("Routing!!");
+                        //console.log("Routing!!");
                         let location = await Location.getCurrentPositionAsync({});
                         this.setState({...this.state,location: location})
                       }    
@@ -109,7 +109,7 @@ class GoogleMapHomeClass extends React.Component {
           this.state.subscription.remove();
           }
 
-          console.log("Did cancel interval??");
+          //console.log("Did cancel interval??");
         }
 
                  
@@ -245,7 +245,7 @@ class GoogleMapHomeClass extends React.Component {
                         strokeColor="green"
                         mode ='WALKING'
                         onReady={result => {
-                          console.log(result.coordinates);
+                          //console.log(result.coordinates);
                             if(result.distance * FOOT_CONVERSION < 20){
                                 //this.state.intervalState = false;
                                 // clearInterval(this.state.headingInterval);
@@ -409,7 +409,6 @@ class GoogleMapHomeClass extends React.Component {
                   {this.state.renderMarkers && this.renderMarkers()}
                   {this.state.routes && this.renderRoutes()}
                   {this.state.livesRoutes && this.renderLiveRoutes()}
-                  {this.state.livesRoutes && this.renderEndMarker()}
                   
             </MapView>
                    {this.state.routes && this.renderPreviewDescription()} 
