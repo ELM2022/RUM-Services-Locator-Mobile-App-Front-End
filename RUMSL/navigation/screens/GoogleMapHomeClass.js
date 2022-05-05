@@ -1,9 +1,9 @@
 import * as React from 'react';
-import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Alert } from 'react-native';
+import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Alert, SafeAreaView, Platform } from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker, Callout} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-import {getAllOffices, getOfficeByID} from '../../handler/directoryHandler';
+import {getAllOffices} from '../../handler/directoryHandler';
 import { Button } from 'react-native-elements';
 
 
@@ -91,8 +91,8 @@ class GoogleMapHomeClass extends React.Component {
             // console.log("No Change")
         }
         else{
-            const newLatitude = this.props.route.params.office_latitude
-            const newLongitude = this.props.route.params.office_longitude
+            const newLatitude = this.props.route.params.office_entrance_latitude
+            const newLongitude = this.props.route.params.office_entrance_longitude
             if(newLatitude !== initialPosition.latitude && newLongitude !== initialPosition.longitude) {
                 this.updateDestination(newLatitude, newLongitude,this.props.route.params)
                 this.mountRoute()
@@ -102,7 +102,7 @@ class GoogleMapHomeClass extends React.Component {
 
     renderMarkers() {
         return this.state.offices.map((office, index) => {
-            const {office_name, office_description, office_schedule, office_latitude, office_longitude,office_id} = office;
+            const {office_name, office_description, office_schedule, office_latitude, office_longitude, office_entrance_latitude, office_entrance_longitude, office_id} = office;
             return (
                 <Marker
                 key={index}
@@ -113,7 +113,7 @@ class GoogleMapHomeClass extends React.Component {
                 coordinate={{latitude: office_latitude, longitude: office_longitude}}
                 icon = {require('../map/pawPinSmall.png')} 
                 onPress = {() => {
-                    this.updateDestination(office_latitude,office_longitude,office)  
+                    this.updateDestination(office_entrance_latitude,office_entrance_longitude,office)  
                 }
             }
                 >
@@ -217,7 +217,7 @@ class GoogleMapHomeClass extends React.Component {
         console.log(`The state of the interval is = ${this.state.intervalState}`)
         let item = this.state.previewOffice
         return(
-            
+            <View style={styles.preview}>
             <View style={styles.carousel}>
         <View style={styles.cardContainer}>
             <ScrollView>
@@ -227,6 +227,8 @@ class GoogleMapHomeClass extends React.Component {
                 <Text style={styles.cardImage}>{item.office_description}</Text>
             </ScrollView>
         </View>
+        </View>
+        <View style={styles.buttons}>
         <Pressable
         
         style={styles.startButton}>
@@ -252,13 +254,11 @@ class GoogleMapHomeClass extends React.Component {
        <Text style={styles.textButton} >Salir</Text>
         </Pressable>
         </View>
-        
-        
+        </View>    
         )
     }
 
     renderCancelButton(){
-        console.log('Render Cancel Button!')
         return(
         <View style={styles.cancelButtonView}>
         <Pressable
@@ -289,9 +289,7 @@ class GoogleMapHomeClass extends React.Component {
         <View style={styles.cardContainer}>
             <ScrollView>
                 <Text style={styles.cardTitle}>{item.office_name}</Text>
-                <Text style={styles.cardHours}>{item.office_schedule}</Text>
-                <Text style={styles.cardHours}>{item.office_phone_number}</Text>
-                <Text style={styles.cardImage}>{item.office_description}</Text>
+                <Text style={styles.cardImage}>{item.office_route_instructions}</Text>
             </ScrollView>
         </View>
         <Pressable
@@ -307,6 +305,16 @@ class GoogleMapHomeClass extends React.Component {
         </Pressable>
         </View>
         )
+    }
+
+    renderEndMarker() {
+      return (
+        <Marker
+        pinColor='#FFC5AA'
+        coordinate={{latitude: this.state.destination.latitude, longitude: this.state.destination.longitude}}
+        icon= {require('../map/endPin.png')} 
+        />    
+      )
     }
 
     hideRoute(){
@@ -338,6 +346,7 @@ class GoogleMapHomeClass extends React.Component {
                   {this.renderMarkers()}
                   {this.state.routes && this.renderRoutes()}
                   {this.state.livesRoutes && this.renderLiveRoutes()}
+                  {this.state.livesRoutes && this.renderEndMarker()}
                   
             </MapView>
                    {this.state.routes && this.renderPreviewDescription()} 
@@ -399,6 +408,16 @@ const styles = StyleSheet.create({
         fontSize: 14,
         alignSelf: 'center'
       },
+      preview: {
+        position: 'absolute',
+        top: 0,
+        alignItems: 'center'
+      },
+      buttons: {
+        position: 'absolute',
+        bottom: 0,
+        marginBottom:48
+      },
       startButton: {
         alignItems: 'center',
         justifyContent: 'flex-start',
@@ -408,9 +427,8 @@ const styles = StyleSheet.create({
         elevation: 3,
         backgroundColor: '#0080FF',
         position: 'absolute',
-        bottom: (-0.568) * Dimensions.get('window').height,
-        marginBottom: 48,
-        left: 0,
+        bottom: (-0.95) * Dimensions.get('window').height,
+        right: 48,
         width: (Dimensions.get('window').width / 2 ) - 50,
         borderRadius: 24 
       },
@@ -423,9 +441,8 @@ const styles = StyleSheet.create({
         elevation: 3,
         backgroundColor: 'red',
         position: 'absolute',
-        bottom: (-0.568) * Dimensions.get('window').height,
-        marginBottom: 48,
-        right:0,
+        bottom: (-0.95) * Dimensions.get('window').height,
+        left:48,
         width: (Dimensions.get('window').width / 2 ) - 55,
         borderRadius: 24 
       },
