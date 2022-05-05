@@ -3,7 +3,7 @@ import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Al
 import MapView, {PROVIDER_GOOGLE, Marker, Callout} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
-import {getAllOffices, getOfficeByID} from '../../handler/directoryHandler';
+import {getAllOffices} from '../../handler/directoryHandler';
 import { Button } from 'react-native-elements';
 
 
@@ -91,8 +91,8 @@ class GoogleMapHomeClass extends React.Component {
             // console.log("No Change")
         }
         else{
-            const newLatitude = this.props.route.params.office_latitude
-            const newLongitude = this.props.route.params.office_longitude
+            const newLatitude = this.props.route.params.office_entrance_latitude
+            const newLongitude = this.props.route.params.office_entrance_longitude
             if(newLatitude !== initialPosition.latitude && newLongitude !== initialPosition.longitude) {
                 this.updateDestination(newLatitude, newLongitude,this.props.route.params)
                 this.mountRoute()
@@ -102,7 +102,7 @@ class GoogleMapHomeClass extends React.Component {
 
     renderMarkers() {
         return this.state.offices.map((office, index) => {
-            const {office_name, office_description, office_schedule, office_latitude, office_longitude,office_id} = office;
+            const {office_name, office_description, office_schedule, office_latitude, office_longitude, office_entrance_latitude, office_entrance_longitude, office_id} = office;
             return (
                 <Marker
                 key={index}
@@ -113,7 +113,7 @@ class GoogleMapHomeClass extends React.Component {
                 coordinate={{latitude: office_latitude, longitude: office_longitude}}
                 icon = {require('../map/pawPinSmall.png')} 
                 onPress = {() => {
-                    this.updateDestination(office_latitude,office_longitude,office)  
+                    this.updateDestination(office_entrance_latitude,office_entrance_longitude,office)  
                 }
             }
                 >
@@ -289,9 +289,7 @@ class GoogleMapHomeClass extends React.Component {
         <View style={styles.cardContainer}>
             <ScrollView>
                 <Text style={styles.cardTitle}>{item.office_name}</Text>
-                <Text style={styles.cardHours}>{item.office_schedule}</Text>
-                <Text style={styles.cardHours}>{item.office_phone_number}</Text>
-                <Text style={styles.cardImage}>{item.office_description}</Text>
+                <Text style={styles.cardImage}>{item.office_route_instructions}</Text>
             </ScrollView>
         </View>
         <Pressable
