@@ -250,7 +250,6 @@ class GoogleMapHomeClass extends React.Component {
                                 //this.state.intervalState = false;
                                 // clearInterval(this.state.headingInterval);
                                 //this.setState({...this.state,intervalState:false}) 
-                                this.state.renderMarkers = true;
                                 this.state.subscription.remove();
                                 this.state.subscription=null;
                                 this.cancelLiveRoute();
@@ -347,22 +346,25 @@ class GoogleMapHomeClass extends React.Component {
     renderInstructions() {
         let item = this.state.previewOffice
         return( 
-            <View style={styles.carousel}>
+        <View style={styles.carousel}>
         <View style={styles.cardContainer}>
             <ScrollView>
                 <Text style={styles.cardTitle}>{item.office_name}</Text>
                 <Text style={styles.cardImage}>{item.office_route_instructions}</Text>
             </ScrollView>
+        </View>
+        <View>
         <Pressable
         style={styles.finishButton}
         onPress={() => {
                 if(this.state.instructions === true ){
+                    this.state.renderMarkers = true;
                     this.setState({...this.state,instructions:false}) 
                 }   
             } 
         }
         >
-       <Text style={styles.textButton} >Entendido</Text>
+       <Text style={styles.textButton}>Listo</Text>
         </Pressable>
         </View>
         </View>
@@ -517,10 +519,10 @@ const styles = StyleSheet.create({
         elevation: 3,
         backgroundColor: '#0080FF',
         position: 'absolute',
-        bottom: (-0.568) * Dimensions.get('window').height,
+        bottom: (-0.55) * Dimensions.get('window').height,
         marginBottom: 48,
         right:0,
-        width: (Dimensions.get('window').width / 2 ) - 55,
+        width: (Dimensions.get('window').width / 2 ) - 60,
         borderRadius: 24 
       },
       cancelButtonLiveRoute: {
