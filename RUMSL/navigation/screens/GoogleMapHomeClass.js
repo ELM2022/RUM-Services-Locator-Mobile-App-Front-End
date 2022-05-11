@@ -1,11 +1,12 @@
 import * as React from 'react';
-import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Alert, SafeAreaView, Platform } from 'react-native';
+import{View,Text,StyleSheet,Dimensions,ScrollView,TouchableOpacity,Pressable, Alert, SafeAreaView, Platform, Linking } from 'react-native';
 import MapView, {PROVIDER_GOOGLE, Marker, Callout} from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import {getAllOffices} from '../../handler/directoryHandler';
 import { Button } from 'react-native-elements';
 import { Magnetometer } from 'expo-sensors';
+//import 'react-native-gesture-handler'
 
 const { width, height } = Dimensions.get('window');
 const GOOGLE_MAPS_APIKEY = 'AIzaSyAQW5Yo0EM3l4Who0_9suk42tpMwbNSCG8';
@@ -34,7 +35,9 @@ class GoogleMapHomeClass extends React.Component {
         instructions: false,
         preview : false,
         renderCancel : false,
+        renderInteractButton : false,
         intervalState : false,
+        mapInteract : false,
         previewOffice : {},
         liveInterval: null,
         headingInterval: null,
@@ -73,12 +76,9 @@ class GoogleMapHomeClass extends React.Component {
               this.setState({...this.state,location: location})
     }
     updateHeading(){
-      //console.log("Starting Update Heading");
        this.state.headingInterval = setInterval(async() => {
           if(this.state.intervalState){
-          //console.log("Angle="+ this.state.magnetometer);
            this._map.setCamera({center: {latitude: this.state.location.coords.latitude,longitude: this.state.location.coords.longitude},pitch: 0, heading: this.state.magnetometer + 270,altitude: 0, zoom:20})
-            
           }
      }, 125);
     }
@@ -87,14 +87,12 @@ class GoogleMapHomeClass extends React.Component {
         this._subscribe();
         Magnetometer.setUpdateInterval(250);
         this.updateHeading();
-        //console.log("Starting Live Routing");
         this.state.liveInterval = setInterval(async() => {
           if(this.state.intervalState){
                       if (this.state.permissionStatus !== 'granted') {
                           this.setState({...this.state,errorMsg:'Permission to access location was denied'})
                           return;
                         }
-                        //console.log("Routing!!");
                         let location = await Location.getCurrentPositionAsync({});
                         this.setState({...this.state,location: location})
                       }    
@@ -108,8 +106,6 @@ class GoogleMapHomeClass extends React.Component {
           if(this.state.subscription !== null){
           this.state.subscription.remove();
           }
-
-          //console.log("Did cancel interval??");
         }
 
                  
@@ -130,7 +126,11 @@ class GoogleMapHomeClass extends React.Component {
 
     componentDidUpdate(prevProps) {
         if(prevProps == this.props){
-            // console.log("No Change")
+          
+        }
+        else if(this.state.livesRoutes == true || this.state.instructions == true){
+           Alert.alert("Favor salir de la navegación actual para proceder.")
+           return;
         }
         else{
             const newLatitude = this.props.route.params.office_entrance_latitude
@@ -147,6 +147,13 @@ class GoogleMapHomeClass extends React.Component {
     renderMarkers() {
         return this.state.offices.map((office, index) => {
             const {office_name, office_description, office_schedule, office_latitude, office_longitude, office_entrance_latitude, office_entrance_longitude, office_id} = office;
+           let photoPath;
+            if(Platform.OS == "android"){
+              photoPath = require('../map/pawPinSmall.png')
+            }
+            else{
+              photoPath = require('../map/small4.png')
+            }
             return (
                 <Marker
                 key={index}
@@ -155,7 +162,7 @@ class GoogleMapHomeClass extends React.Component {
                 title={office_name}
                 pinColor='#FFC5AA'
                 coordinate={{latitude: office_latitude, longitude: office_longitude}}
-                icon = {require('../map/pawPinSmall.png')} 
+                icon = {photoPath} 
                 onPress = {() => {
                     this.updateDestination(office_entrance_latitude,office_entrance_longitude,office)  
                 }
@@ -169,7 +176,7 @@ class GoogleMapHomeClass extends React.Component {
                                 <Text>{office_name }</Text>
                                 <Text>{office_schedule}</Text> 
                                 <Button
-                                title='Ver mas'
+                                title='Ver más'
                                 /> 
                     </Callout>   
                 </Marker>
@@ -186,7 +193,6 @@ class GoogleMapHomeClass extends React.Component {
     
 
     mountRoute(){
-      
         this.setState({...this.state,routes:true})
     }
     renderRoutes() {
@@ -210,7 +216,6 @@ class GoogleMapHomeClass extends React.Component {
                     strokeColor="green"
                     mode ='WALKING'
                     onReady={result => {
-                      //console.log(result.coordinates);
                         this._map.fitToCoordinates(result.coordinates, {
                           edgePadding: {
                             right: (width / 20),
@@ -236,7 +241,6 @@ class GoogleMapHomeClass extends React.Component {
             }
             return(
              <MapViewDirections
-             
                         origin={{latitude: this.state.location.coords.latitude,longitude: this.state.location.coords.longitude}}
                         destination={{latitude: this.state.destination.latitude,longitude: this.state.destination.longitude}}
                         apikey={GOOGLE_MAPS_APIKEY}
@@ -245,11 +249,7 @@ class GoogleMapHomeClass extends React.Component {
                         strokeColor="green"
                         mode ='WALKING'
                         onReady={result => {
-                          //console.log(result.coordinates);
-                            if(result.distance * FOOT_CONVERSION < 20){
-                                //this.state.intervalState = false;
-                                // clearInterval(this.state.headingInterval);
-                                //this.setState({...this.state,intervalState:false}) 
+                            if(result.distance * FOOT_CONVERSION < 15){
                                 this.state.subscription.remove();
                                 this.state.subscription=null;
                                 this.cancelLiveRoute();
@@ -270,24 +270,64 @@ class GoogleMapHomeClass extends React.Component {
             )
         }
 
+        renderLiveRoutesWithoutAnimation() {
+          async() => {
+              if (this.state.permissionStatus !== 'granted') {
+                  this.setState({...this.state,errorMsg:'Permission to access location was denied'})
+                  return;
+              }
+              let location = await Location.getCurrentPositionAsync({});
+              this.setState({...this.state,location: location})
+          }
+          return(
+           <MapViewDirections
+                      origin={{latitude: this.state.location.coords.latitude,longitude: this.state.location.coords.longitude}}
+                      destination={{latitude: this.state.destination.latitude,longitude: this.state.destination.longitude}}
+                      apikey={GOOGLE_MAPS_APIKEY}
+                      strokeWidth={7}
+                      resetOnChange={false}
+                      strokeColor="green"
+                      mode ='WALKING'
+                      onReady={result => {
+                          if(result.distance * FOOT_CONVERSION < 15){
+                              this.state.routes = false;
+                              this.state.livesRoutes = false;
+                              this.state.renderCancel = false;
+                              this.setState({...this.state,intervalState:false}) 
+                              this.setState({...this.state, instructions: true})
+                            
+                          }
+                        }}
+          /> 
+          )
+      }
+
     renderPreviewDescription(){
-        console.log(`The state of the interval is = ${this.state.intervalState}`)
         let item = this.state.previewOffice
+        let webLink = item.office_website
+        if(webLink == null){
+          webLink = 'https://www.uprm.edu/'
+        }
         return(
             <View style={styles.preview}>
             <View style={styles.carousel}>
         <View style={styles.cardContainer}>
             <ScrollView>
                 <Text style={styles.cardTitle}>{item.office_name}</Text>
+                <Text style={styles.cardHours}>{item.office_room_code}</Text>
                 <Text style={styles.cardHours}>{item.office_schedule}</Text>
                 <Text style={styles.cardHours}>{item.office_phone_number}</Text>
+                <Text style={styles.cardHours}>{item.office_extension_number}</Text>
                 <Text style={styles.cardImage}>{item.office_description}</Text>
+                <Text style={{color: 'blue'}}
+                  onPress={() => Linking.openURL(webLink)}>
+                    ¡Acceda a su página a través de este enlace!
+                </Text>
             </ScrollView>
         </View>
         </View>
         <View style={styles.buttons}>
         <Pressable
-        
         style={styles.startButton}>
         <Text style={styles.textButton} 
         onPress={() => {
@@ -295,6 +335,7 @@ class GoogleMapHomeClass extends React.Component {
             this.state.intervalState=true;
             this.state.routes=false;
             this.state.renderCancel = true;
+           // this.state.renderInteractButton = true;
             this.state.livesRoutes = true;
             this.setState({...this.state, liveRoutes:true})
             this.startLiveRoute();
@@ -309,16 +350,36 @@ class GoogleMapHomeClass extends React.Component {
             } 
           }}
         >
-       <Text style={styles.textButton} >Salir</Text>
+       <Text style={styles.textButton} >⏎ Regresar</Text>
         </Pressable>
         </View>
         </View>    
         )
     }
 
-    renderCancelButton(){
+    renderCancelAndInteractButton(){
+      let item = this.state.previewOffice
         return(
+          <View style={styles.previewLive}>
+          <View style={styles.carouselLive}>
+        <View style={styles.cardContainerLive}>
+                <Text style={styles.cardTitle}>Siga la ruta hacia:</Text>
+                <Text style={styles.cardSubTitle}>{item.office_name}</Text>
+        </View>
+        </View>
         <View style={styles.cancelButtonView}>
+           <Pressable style={styles.interactButton}>
+            <Text style={styles.textButton} 
+            onPress={() => {
+              this.state.subscription.remove();
+              this.cancelLiveRoute();
+              this.state.subscription=null;
+               this.state.mapInteract = true;
+               this.setState({...this.state,mapInteract:true})
+              this.state.renderCancel = false;
+              }}
+              >Interactuar con mapa</Text>
+        </Pressable>
         <Pressable
         style={styles.cancelButtonLiveRoute}
         onPress={() => {
@@ -326,12 +387,9 @@ class GoogleMapHomeClass extends React.Component {
             this.state.renderMarkers = true;
             this.state.subscription.remove();
             this.state.subscription=null;
-            //this.setState({...this.state,livesRoutes:false}) 
-            //this.setState({...this.state,routes:true}) 
             this.state.routes = true;
             this.state.livesRoutes = false;
             this.state.renderCancel = false;
-            //this.setState({...this.state,renderCancel:false})
             this.setState({...this.state,intervalState:false}) 
           }}
         >
@@ -340,6 +398,53 @@ class GoogleMapHomeClass extends React.Component {
        >Cancelar</Text>
         </Pressable>
         </View>
+        </View> 
+        )
+    }
+
+    renderMapInteract(){
+      let item = this.state.previewOffice
+        return(
+          <View style={styles.previewLive}>
+          <View style={styles.carouselLive}>
+        <View style={styles.cardContainerLive}>
+                <Text style={styles.cardTitle}>Siga la ruta hacia:</Text>
+                <Text style={styles.cardSubTitle}>{item.office_name}</Text>
+        </View>
+        </View>
+        <View style={styles.cancelButtonView}>
+           <Pressable style={styles.returnToNavigationButton}>
+            <Text style={styles.textButton} 
+            onPress={() => {
+              this.state.mapInteract = false;
+              this.state.renderMarkers = false;
+                this.state.intervalState=true;
+                this.state.routes=false;
+                this.state.renderCancel = true;
+               // this.state.renderInteractButton = true;
+                this.state.livesRoutes = true;
+                this.setState({...this.state, liveRoutes:true})
+                this.startLiveRoute();
+              }}
+              >Regresar a Navegación</Text>
+        </Pressable>
+        <Pressable
+        style={styles.cancelButtonLiveRoute}
+        onPress={() => {          
+          this.state.renderMarkers = true;
+          this.state.mapInteract = false;
+          this.state.routes = true;
+          this.state.livesRoutes = false;
+          this.state.renderCancel = false;
+          this.setState({...this.state,intervalState:false}) 
+        }}
+        >
+       <Text 
+       style={styles.textButtonLiveRoute}
+       >Cancelar</Text>
+        </Pressable>
+        </View>
+        </View> 
         )
     }
 
@@ -351,6 +456,7 @@ class GoogleMapHomeClass extends React.Component {
             <ScrollView>
                 <Text style={styles.cardTitle}>{item.office_name}</Text>
                 <Text style={styles.cardImage}>{item.office_route_instructions}</Text>
+                <Text style={styles.cardHours}>{item.office_room_code}</Text>
             </ScrollView>
         </View>
         <View>
@@ -390,35 +496,25 @@ class GoogleMapHomeClass extends React.Component {
     render(){
         return(
             <View style={styles.container}>
-            {/*Render our MapView*/}
-            
               <MapView
-              
               toolbarEnabled = {false}
               showsMyLocationButton = {true}
               ref={map => this._map = map}
               provider={PROVIDER_GOOGLE}
                 style={styles.map}
-                //specify our coordinates.
                 initialRegion={initialPosition}
                 showsUserLocation={true}
-                // onPress={() => {
-                //     if(this.state.routes === true ){
-                //         this.setState({...this.state,routes:false})    
-                //     } 
-                //   }}
               >
                   {this.state.renderMarkers && this.renderMarkers()}
                   {this.state.routes && this.renderRoutes()}
-                  {this.state.livesRoutes && this.renderLiveRoutes()}
-                  
+                  {this.state.livesRoutes && this.renderLiveRoutes()}  
             </MapView>
                    {this.state.routes && this.renderPreviewDescription()} 
-                   {this.state.renderCancel && this.renderCancelButton()}
+                   {this.state.renderCancel && this.renderCancelAndInteractButton()}
+                   {this.state.mapInteract && this.renderMapInteract()}
+                   {this.state.mapInteract && this.renderLiveRoutesWithoutAnimation()}
                    {this.state.instructions && this.renderInstructions()}
-            </View>
-           
-            
+            </View> 
         );
     }
 }
@@ -427,7 +523,7 @@ export default GoogleMapHomeClass;
 const styles = StyleSheet.create({
     container: {
       ...StyleSheet.absoluteFillObject,
-      flex: 1, //the container will fill the whole screen.
+      flex: 1, 
       justifyContent: "flex-end",
       alignItems: "center",
     },
@@ -448,9 +544,21 @@ const styles = StyleSheet.create({
         top: 0,
         marginTop: 48
       },
+      carouselLive: {
+        position: 'absolute',
+        top: 0,
+        marginTop: 48
+      },
       cardContainer: {
         backgroundColor: 'rgba(0,102, 0, 0.6)',
         height: 275,
+        width: Dimensions.get('window').width - 5,
+        padding: 24,
+        borderRadius: 24
+      },
+      cardContainerLive: {
+        backgroundColor: 'rgba(0,102, 0, 0.6)',
+        height: 90,
         width: Dimensions.get('window').width - 5,
         padding: 24,
         borderRadius: 24
@@ -467,12 +575,24 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         textAlign: 'center'
       },
+      cardSubTitle: {
+        color: 'white',
+        fontSize: 18,
+        alignSelf: 'center',
+        fontWeight: "bold",
+        textAlign: 'center'
+      },
       cardHours: {
         color: 'white',
         fontSize: 14,
         alignSelf: 'center'
       },
       preview: {
+        position: 'absolute',
+        top: 0,
+        alignItems: 'center'
+      },
+      previewLive: {
         position: 'absolute',
         top: 0,
         alignItems: 'center'
@@ -490,6 +610,34 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         elevation: 3,
         backgroundColor: '#0080FF',
+        position: 'absolute',
+        bottom: (-0.95) * Dimensions.get('window').height,
+        right: 48,
+        width: (Dimensions.get('window').width / 2 ) - 50,
+        borderRadius: 24 
+      },
+      interactButton: {
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 4,
+        elevation: 3,
+        backgroundColor: '#0080FF',
+        position: 'absolute',
+        bottom: (-0.95) * Dimensions.get('window').height,
+        right: 48,
+        width: (Dimensions.get('window').width / 2 ) - 50,
+        borderRadius: 24 
+      },
+      returnToNavigationButton: {
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        borderRadius: 4,
+        elevation: 3,
+        backgroundColor: 'green',
         position: 'absolute',
         bottom: (-0.95) * Dimensions.get('window').height,
         right: 48,
@@ -535,13 +683,12 @@ const styles = StyleSheet.create({
         backgroundColor: 'red',
         position: 'absolute',
         bottom: (-0.95) * Dimensions.get('window').height,
-        marginBottom: 48,
-        right:2,
-        width: (Dimensions.get('window').width / 2 ) - 60,
-        borderRadius: 24
-        
+        left:48,
+        width: (Dimensions.get('window').width / 2 ) - 55,
+        borderRadius: 24 
       },
       textButton: {
+        fontSize: 12,
         color: 'white',
        
       },
@@ -551,8 +698,8 @@ const styles = StyleSheet.create({
       },
       cancelButtonView:{
         position: 'absolute',
-        top: 0,
-        right: 0,
+        bottom: 0,
+        marginBottom:48
       }
       
   });

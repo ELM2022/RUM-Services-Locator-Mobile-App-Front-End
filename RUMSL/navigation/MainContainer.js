@@ -4,6 +4,7 @@ import { NavigationContainer, DefaultTheme, useNavigationContainerRef } from '@r
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {getAllOffices} from '../handler/directoryHandler';
+//import 'react-native-gesture-handler'
 
 //Screens
 
@@ -15,14 +16,12 @@ import SearchScreen from './screens/SearchViewWithResults';
 //Screens names
 const homeName = 'Inicio';
 const directoryName = 'Directorio';
-const searchName = 'Busqueda';
+const searchName = 'Búsqueda';
 
 const MyTheme = {
  
     colors: {
       ...DefaultTheme.colors,
-      //primary: 'green',
-      //background: 'white',
       card: 'green',
     },
   };
@@ -33,7 +32,6 @@ const CustomTabBarButton = ({children, onPress}) => (
         top: -25,
         justifyContent: 'center',
         alignItems: 'center',
-        //...styles.shadowOpacity
     }}
     onPress={onPress}
     >
@@ -49,11 +47,7 @@ const CustomTabBarButton = ({children, onPress}) => (
 );
 
 export default function MainContainer(){
-
     const navigationRef = useNavigationContainerRef();
-    
-  
-
     return(
         <NavigationContainer theme={MyTheme}>
             
@@ -80,23 +74,16 @@ export default function MainContainer(){
                 
                 tabBarActiveTintColor:'black',
                 tabBarInactiveTintColor:'white',
-               // tabBarActiveBackgroundColor:'green',
-                //tabBarInactiveBackgroundColor:'green',
-                //position:'absolute',
                 elevation: 0, // remove shadow on Android
                 shadowOpacity: 0, // remove shadow on iOS
-                borderBottomWidth: 0, // Just in case.
-                
+                borderBottomWidth: 0, 
                 tabBarLabelStyle:{
                     fontSize:15,
                     
                },
 
             })}
-           
-            
             >
-               
                 <Tab.Screen name={directoryName} component={DirectoryScreen}
                 options = {{
                     headerStyle: { backgroundColor: 'white' }
