@@ -1,56 +1,64 @@
 //import * as React from 'react';
-import React, { Component, useState } from 'react'
+import React, { Component, useEffect, useState } from 'react'
 import {  Searchbar } from 'react-native-paper';
-import { View ,Text,Button,Alert,Keyboard, StyleSheet,Pressable,TouchableOpacity,ScrollView,SafeAreaView} from 'react-native';
+import { View ,Text,Button,Alert,Keyboard, StyleSheet,Pressable,TouchableOpacity,ScrollView,SafeAreaView, ActivityIndicator} from 'react-native';
 import { getAutoComplete,getServices,getAllOffices} from '../../handler/directoryHandler';
-
+//import 'react-native-gesture-handler'
 
 const MyComponent = ({navigation}) => {
       
     var autoCompleteArr = []
     const [servicesArr , setServicesArr] = React.useState([]);
-    //const onChangeArr = query => setServicesArr(query);
+    const [inputedKeyword , setInputedKeyword] = React.useState('');
 
   function testAzureSearch(inputKeyword) {
+    setInputedKeyword(inputKeyword);
       setServicesArr([]);
-  getAutoComplete(inputKeyword).then(res => {
-    //console.log(res.data.value[0].text) 
-    autoCompleteArr = res.data.value;
+      getAutoComplete(inputKeyword).then(res => {
+
+      autoCompleteArr = res.data.value;
+      if(res.data.value[0] === {} || res.data.value[0] === null || res.data.value[0] === undefined){
+       Alert.alert('No se encontró ningún servicio relacionado a esa palabra. Por favor intente de nuevo.');
+      }
     autoCompleteArr.forEach(element => {
-       //console.log(element.text)
-         ///
+   
            getServices(element.text).then(res => {
-            //servicesArr = res.data.value;
             setServicesArr(res.data.value);
+
             servicesArr.map((objects, index) => {
                 const { office_id, office_name } = objects //destructuring
-                console.log(office_name)
           })
          })
     });
  })
- renderTableData()
-
+  renderTableData()
 };
 
-function componentDidMount(){
-  
-    getAllOffices().then(res => {
-       //console.log(res.data.data.offices) 
-       //var Offices = res.data.data.offices
-       servicesArr = res.data.data.offices
-       servicesArr.map((res, index) => {
-          const { office_id, office_name } = res //destructuring
-          console.log(office_id +":"+office_name)
-    })
-    })
-   
- }
+function reRenderAzureSearch() {
+  setServicesArr([]);
+  getAutoComplete(inputedKeyword).then(res => {
 
- 
+  autoCompleteArr = res.data.value;
+  if(res.data.value[0] === {} || res.data.value[0] === null || res.data.value[0] === undefined){
+   Alert.alert('No se encontró ningún servicio relacionado a esa palabra. Por favor intente de nuevo.');
+  }
+autoCompleteArr.forEach(element => {
+
+       getServices(element.text).then(res => {
+        setServicesArr(res.data.value);
+
+        servicesArr.map((objects, index) => {
+            const { office_id, office_name } = objects //destructuring
+      })
+     })
+});
+})
+renderTableData()
+};
+
+
 
 function renderTableData(){
-   
   return servicesArr.map((office, index) => {
      const { office_id, office_name } = office //destructuring
      return (
@@ -59,37 +67,17 @@ function renderTableData(){
         style={styles.button2}
         onPress={() => {
           navigation.navigate('Inicio', office)
+          reRenderAzureSearch()
         }}
         >
         <Text style={styles.text2}>{office_name}</Text>
       </TouchableOpacity>
       </View>
+      
      )
-  })
+  }) 
 }
-
-function renderTable(){
-  return (
-     <View style={styles.scrollView}>
-       <ScrollView  id='students'> 
-                {renderTableData()}  
-       </ScrollView>
-    </View>
-  )
-}
-function renderSearchTable(){
-    return (
-       <View style={styles.scrollView}>
-         <ScrollView  id='students'> 
-                  {renderTableData()}  
-         </ScrollView>
-      </View>
-    )
-  }
-
-  
-
-           
+          
   const [searchQuery, setSearchQuery] = React.useState('');
   const onChangeSearch = query => setSearchQuery(query);
   return (
@@ -100,6 +88,7 @@ function renderSearchTable(){
       onChangeText={onChangeSearch}
       value={searchQuery}
     />
+    
     <Text style={styles.baseText}>
       {'\n'}
       {'     '}
@@ -107,15 +96,17 @@ function renderSearchTable(){
     </Text>
     <Pressable style={styles.button}
       onPress={() => {
+        
         testAzureSearch(searchQuery)
         Keyboard.dismiss()
      }
-    } // Value stored in search bar
+    } 
     >
       <Text style={styles.text}>Buscar</Text>
     </Pressable>
-    <View style={styles.viewStyle}>
-    <ScrollView style={styles.scrollView}>
+    
+     <View style={styles.viewStyle}>
+     <ScrollView style={styles.scrollView}>
      {renderTableData()}
   </ScrollView>
   </View>
@@ -174,6 +165,15 @@ viewStyle:{
     backgroundColor: "#FFFFFF",
     
 },
+container: {
+  flex: 1,
+  justifyContent: "center"
+},
+horizontal: {
+  flexDirection: "row",
+  justifyContent: "space-around",
+  padding: 10
+}
   
 });
 
